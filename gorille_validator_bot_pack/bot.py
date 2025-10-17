@@ -33,8 +33,17 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 # validation_msg_id -> {member_id, target_role_id, emoji}
 PENDING_VALIDATIONS = {}
 
-def is_gorille(member: discord.Member) -> bool:
-    return any(r.id == GORILLE_ROLE_ID for r in member.roles)
+def is_validator(member: discord.Member) -> bool:
+    VALIDATOR_ROLE_IDS = [
+        1388913852707639316,  # 🦍 Gorille
+        1428882830452326461,  # Leader Clan Gojo
+        1428882689502482536,  # Leader Clan Tempest
+        1428882949603983561,  # Leader Clan Guilde 2
+        1428883007124668416,  # Leader Clan Kamo
+        1428883088858943649,  # Leader Clan Destin
+    ]
+    return any(r.id in VALIDATOR_ROLE_IDS for r in member.roles)
+
 
 @bot.event
 async def on_ready():
@@ -107,8 +116,9 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
     # 2) Gorille reacts in the validation channel -> approve / reject
     if payload.channel_id == VALIDATION_CHANNEL_ID and payload.message_id in PENDING_VALIDATIONS:
         reactor = guild.get_member(payload.user_id) or await guild.fetch_member(payload.user_id)
-        if not is_gorille(reactor):
-            return
+        if not is_validator(reactor):
+    return
+
 
         decision = str(payload.emoji)
         data = PENDING_VALIDATIONS[payload.message_id]
